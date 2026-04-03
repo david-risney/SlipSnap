@@ -1,0 +1,41 @@
+﻿<Window x:Class="SlipSnap.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SlipSnap"
+        mc:Ignorable="d"
+        Title="SlipSnap"
+        Topmost="True"
+        ShowInTaskbar="False"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        Width="48" Height="300"
+        Loaded="Window_Loaded">
+    <Border Background="#CC222222" CornerRadius="8" Padding="4">
+        <StackPanel VerticalAlignment="Center">
+            <TextBlock Text="SlipSnap" Foreground="White" FontSize="10"
+                       HorizontalAlignment="Center" Margin="0,0,0,8"/>
+            <Button Content="&#x2302;" ToolTip="Start Menu (host)" FontSize="18"
+                    Margin="2" Click="StartMenu_Click" Style="{StaticResource OverlayButton}"/>
+            <Button Content="&#x2630;" ToolTip="Task View (host)" FontSize="18"
+                    Margin="2" Click="TaskView_Click" Style="{StaticResource OverlayButton}"/>
+            <TextBlock Text="Host" Foreground="Gray" FontSize="8"
+                       HorizontalAlignment="Center" Margin="0,4,0,0"/>
+            <Button Content="&#x25C0;" ToolTip="Previous Desktop (host)" FontSize="18"
+                    Margin="2" Click="PrevDesktop_Click" Style="{StaticResource OverlayButton}"/>
+            <Button Content="&#x25B6;" ToolTip="Next Desktop (host)" FontSize="18"
+                    Margin="2" Click="NextDesktop_Click" Style="{StaticResource OverlayButton}"/>
+            <TextBlock Text="Remote" Foreground="Gray" FontSize="8"
+                       HorizontalAlignment="Center" Margin="0,4,0,0"/>
+            <Button Content="&#x25C0;" ToolTip="Previous Desktop (remote)" FontSize="18"
+                    Margin="2" Click="RemotePrevDesktop_Click" Style="{StaticResource OverlayButton}"
+                    Foreground="CornflowerBlue"/>
+            <Button Content="&#x25B6;" ToolTip="Next Desktop (remote)" FontSize="18"
+                    Margin="2" Click="RemoteNextDesktop_Click" Style="{StaticResource OverlayButton}"
+                    Foreground="CornflowerBlue"/>
+        </StackPanel>
+    </Border>
+</Window>

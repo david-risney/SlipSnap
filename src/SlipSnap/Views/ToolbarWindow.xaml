@@ -1,0 +1,58 @@
+<Window x:Class="SlipSnap.Views.ToolbarWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        Title="SlipSnap Toolbar"
+        Topmost="True"
+        ShowInTaskbar="False"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        Width="48" Height="260"
+        Loaded="Window_Loaded">
+    <Border x:Name="ToolbarBorder" Background="#CC222222" CornerRadius="8" Padding="4">
+        <StackPanel x:Name="ButtonPanel" VerticalAlignment="Center" Orientation="Vertical">
+            <!-- Grip for dragging -->
+            <Border x:Name="GripArea" Background="#44FFFFFF" CornerRadius="4"
+                    Height="12" Margin="2" Cursor="SizeAll"
+                    MouseLeftButtonDown="Grip_MouseLeftButtonDown"
+                    MouseMove="Grip_MouseMove"
+                    MouseLeftButtonUp="Grip_MouseLeftButtonUp"
+                    AutomationProperties.Name="Grip">
+                <TextBlock Text="⋯" HorizontalAlignment="Center" VerticalAlignment="Center"
+                           Foreground="Gray" FontSize="8" />
+            </Border>
+
+            <!-- Start Menu -->
+            <Button x:Name="BtnStartMenu" Content="⌂" ToolTip="Start Menu"
+                    FontSize="18" Margin="2" Padding="4"
+                    Command="{Binding StartMenuCommand}"
+                    AutomationProperties.Name="Start Menu"
+                    Style="{StaticResource OverlayButtonStyle}" />
+
+            <!-- Task View -->
+            <Button x:Name="BtnTaskView" Content="☰" ToolTip="Task View"
+                    FontSize="18" Margin="2" Padding="4"
+                    Command="{Binding TaskViewCommand}"
+                    AutomationProperties.Name="Task View"
+                    Style="{StaticResource OverlayButtonStyle}" />
+
+            <Separator Margin="2,4" Background="#44FFFFFF" />
+
+            <!-- Previous Desktop -->
+            <Button x:Name="BtnPrevDesktop" Content="◀" ToolTip="Previous Desktop"
+                    FontSize="18" Margin="2" Padding="4"
+                    Command="{Binding PrevDesktopCommand}"
+                    AutomationProperties.Name="Previous Desktop"
+                    Style="{StaticResource OverlayButtonStyle}" />
+
+            <!-- Next Desktop -->
+            <Button x:Name="BtnNextDesktop" Content="▶" ToolTip="Next Desktop"
+                    FontSize="18" Margin="2" Padding="4"
+                    Command="{Binding NextDesktopCommand}"
+                    AutomationProperties.Name="Next Desktop"
+                    Style="{StaticResource OverlayButtonStyle}" />
+        </StackPanel>
+    </Border>
+</Window>

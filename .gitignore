@@ -1,0 +1,28 @@
+# Build outputs
+bin/
+obj/
+publish/
+
+# IDE
+.vs/
+*.user
+*.suo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets and certs
+*.pfx
+*.cer
+.env*
+
+# Logs
+*.log
+
+# NuGet
+packages/
+
+# Prototype build artifacts (prototype/ has its own .gitignore)
+msix-layout/
+*.msix

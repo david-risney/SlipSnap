@@ -1,0 +1,61 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build",
+            "type": "process",
+            "command": "dotnet",
+            "args": ["build", "src/SlipSnap.sln"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "test",
+            "type": "process",
+            "command": "dotnet",
+            "args": ["test", "tests/SlipSnap.Tests", "--verbosity", "minimal"],
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "test (watch)",
+            "type": "process",
+            "command": "dotnet",
+            "args": ["watch", "test", "--project", "tests/SlipSnap.Tests", "--verbosity", "minimal"],
+            "isBackground": true,
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "run",
+            "type": "process",
+            "command": "dotnet",
+            "args": ["run", "--project", "src/SlipSnap"],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "clean",
+            "type": "process",
+            "command": "dotnet",
+            "args": ["clean", "src/SlipSnap.sln"],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "publish",
+            "type": "process",
+            "command": "dotnet",
+            "args": [
+                "publish", "src/SlipSnap",
+                "-c", "Release",
+                "--self-contained", "false",
+                "-o", "publish"
+            ],
+            "problemMatcher": "$msCompile"
+        }
+    ]
+}
