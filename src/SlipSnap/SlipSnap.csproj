@@ -10,6 +10,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationManifest Condition="'$(Configuration)' == 'Release'">app.manifest.uiaccess</ApplicationManifest>
     <ApplicationIcon>Assets\slipsnap.ico</ApplicationIcon>
   </PropertyGroup>
 

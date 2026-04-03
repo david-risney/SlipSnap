@@ -150,8 +150,20 @@ public partial class App : Application
         };
 
         _notifyIcon.ContextMenuStrip.Items.Add("Settings", null, (_, _) => OpenSettings());
+        _notifyIcon.ContextMenuStrip.Items.Add("About", null, (_, _) => ShowAbout());
         _notifyIcon.ContextMenuStrip.Items.Add(new System.Windows.Forms.ToolStripSeparator());
         _notifyIcon.ContextMenuStrip.Items.Add("Quit", null, (_, _) => QuitApp());
+    }
+
+    private void ShowAbout()
+    {
+        var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+        var versionStr = version is not null ? $"{version.Major}.{version.Minor}.{version.Build}" : "dev";
+        System.Windows.MessageBox.Show(
+            $"SlipSnap v{versionStr}\n\nA floating toolbar for Windows that stays on top of fullscreen applications.",
+            "About SlipSnap",
+            MessageBoxButton.OK,
+            MessageBoxImage.Information);
     }
 
     private void OpenSettings()
