@@ -1,24 +1,39 @@
+using System.Text.Json;
 using FluentAssertions;
 using SlipSnap.E2ETests.Helpers;
 
 namespace SlipSnap.E2ETests;
 
-public class ToolbarDragTests : IDisposable
+[Collection("App")]
+public class ToolbarDragTests
 {
-    private readonly AppLauncher _launcher = new();
+    private readonly AppFixture _app;
 
-    public void Dispose() => _launcher.Dispose();
+    public ToolbarDragTests(AppFixture app) => _app = app;
 
-    [Fact(Skip = "Requires built and signed app — run manually")]
-    public void Grip_ShouldExistOnToolbar()
+    [Fact]
+    public void Toolbars_ShouldBeDockedToCorrectEdges()
     {
-        _launcher.Start();
-        Thread.Sleep(2000);
+        using var result = ScriptRunner.Run("inspect-toolbar.ps1");
+        var toolbars = result.RootElement.GetProperty("toolbars");
 
-        var windows = _launcher.App.GetAllTopLevelWindows(_launcher.Automation);
-        var toolbar = windows.First();
+        var edges = toolbars.EnumerateArray()
+            .Select(t => t.GetProperty("edge").GetString()!)
+            .ToList();
 
-        var grip = toolbar.FindFirstDescendant(cf => cf.ByName("Grip"));
-        grip.Should().NotBeNull("Toolbar should have a grip element for dragging");
+        edges.Should().Contain("Left");
+        edges.Should().Contain("Right");
+    }
+
+    [Fact]
+    public void LeftToolbar_ShouldBeAtLeftEdge()
+    {
+        using var result = ScriptRunner.Run("inspect-toolbar.ps1");
+        var toolbars = result.RootElement.GetProperty("toolbars");
+
+        var left = toolbars.EnumerateArray()
+            .First(t => t.GetProperty("edge").GetString() == "Left");
+
+        left.GetProperty("bounds").GetProperty("x").GetInt32().Should().Be(0);
     }
 }

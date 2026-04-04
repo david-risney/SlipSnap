@@ -1,40 +1,49 @@
 using FluentAssertions;
-using FlaUI.Core.AutomationElements;
 using SlipSnap.E2ETests.Helpers;
 
 namespace SlipSnap.E2ETests;
 
-public class ToolbarVisibilityTests : IDisposable
+[Collection("App")]
+public class ToolbarVisibilityTests
 {
-    private readonly AppLauncher _launcher = new();
+    private readonly AppFixture _app;
 
-    public void Dispose() => _launcher.Dispose();
+    public ToolbarVisibilityTests(AppFixture app) => _app = app;
 
-    [Fact(Skip = "Requires built and signed app — run manually")]
+    [Fact]
     public void Toolbar_ShouldBeVisibleOnLaunch()
     {
-        _launcher.Start();
-        Thread.Sleep(2000); // Wait for app startup
+        using var result = ScriptRunner.Run("find-windows.ps1");
+        var root = result.RootElement;
 
-        var mainWindow = _launcher.App.GetAllTopLevelWindows(_launcher.Automation);
-        mainWindow.Should().NotBeEmpty("SlipSnap should have at least one window");
+        root.GetProperty("windowCount").GetInt32().Should().BeGreaterThanOrEqualTo(1);
 
-        // Find toolbar window by automation properties
-        var toolbar = mainWindow.FirstOrDefault(w =>
-            w.Name?.Contains("SlipSnap", StringComparison.OrdinalIgnoreCase) == true);
-        toolbar.Should().NotBeNull("Should find a SlipSnap toolbar window");
+        var windows = root.GetProperty("windows");
+        windows.EnumerateArray().Should().Contain(w =>
+            w.GetProperty("name").GetString()!.Contains("SlipSnap", StringComparison.OrdinalIgnoreCase));
     }
 
-    [Fact(Skip = "Requires built and signed app — run manually")]
+    [Fact]
     public void Toolbar_ShouldHaveDesktopNavigationButtons()
     {
-        _launcher.Start();
-        Thread.Sleep(2000);
+        using var result = ScriptRunner.Run("inspect-toolbar.ps1");
+        var toolbars = result.RootElement.GetProperty("toolbars");
 
-        var windows = _launcher.App.GetAllTopLevelWindows(_launcher.Automation);
-        var toolbar = windows.First();
+        foreach (var toolbar in toolbars.EnumerateArray())
+        {
+            toolbar.GetProperty("buttonCount").GetInt32().Should().BeGreaterThanOrEqualTo(1);
+        }
+    }
 
-        var buttons = toolbar.FindAllDescendants(cf => cf.ByControlType(FlaUI.Core.Definitions.ControlType.Button));
-        buttons.Should().HaveCountGreaterThanOrEqualTo(2, "Toolbar should have at least Next/Prev Desktop buttons");
+    [Fact]
+    public void Toolbar_WindowsShouldNotBeOffscreen()
+    {
+        using var result = ScriptRunner.Run("find-windows.ps1");
+        var windows = result.RootElement.GetProperty("windows");
+
+        foreach (var w in windows.EnumerateArray())
+        {
+            w.GetProperty("isOffscreen").GetBoolean().Should().BeFalse();
+        }
     }
 }

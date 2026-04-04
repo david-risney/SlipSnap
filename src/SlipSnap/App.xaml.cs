@@ -28,6 +28,26 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
+        // Global exception handlers
+        DispatcherUnhandledException += (_, args) =>
+        {
+            Log.Fatal(args.Exception, "Unhandled dispatcher exception");
+            Log.CloseAndFlush();
+        };
+        AppDomain.CurrentDomain.UnhandledException += (_, args) =>
+        {
+            if (args.ExceptionObject is Exception ex)
+            {
+                Log.Fatal(ex, "Unhandled domain exception");
+                Log.CloseAndFlush();
+            }
+        };
+        TaskScheduler.UnobservedTaskException += (_, args) =>
+        {
+            Log.Fatal(args.Exception, "Unobserved task exception");
+            Log.CloseAndFlush();
+        };
+
         // Configure Serilog
         string logDir = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
@@ -53,6 +73,19 @@ public partial class App : Application
 
         // Apply theme
         ApplyTheme(_settings.Theme);
+
+        // Handle --settings flag: open settings dialog only, then exit
+        var args = Environment.GetCommandLineArgs();
+        if (args.Contains("--settings", StringComparer.OrdinalIgnoreCase))
+        {
+            _logger.LogInformation("Opening settings via --settings flag");
+            OpenSettings();
+            _logger.LogInformation("Settings closed, shutting down");
+            Log.CloseAndFlush();
+            _loggerFactory.Dispose();
+            Shutdown();
+            return;
+        }
 
         // Create services
         _keyboardSimulator = new KeyboardSimulator();

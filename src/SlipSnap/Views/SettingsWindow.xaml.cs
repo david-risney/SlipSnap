@@ -21,6 +21,10 @@ public partial class SettingsWindow : FluentWindow
             {
                 var app = (App)System.Windows.Application.Current;
                 app.ApplyTheme(viewModel.Theme);
+                // Force FluentWindow to re-apply its background for the new theme
+                ApplicationThemeManager.Apply(
+                    viewModel.Theme == ThemeMode.Light ? ApplicationTheme.Light : ApplicationTheme.Dark,
+                    Wpf.Ui.Controls.WindowBackdropType.Mica);
             }
         };
     }

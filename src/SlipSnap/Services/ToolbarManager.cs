@@ -79,8 +79,12 @@ public class ToolbarManager : IToolbarManager
                 // Update existing window
                 var window = _windows[edge];
                 window.PositionPercent = settings.Toolbars[edge].PositionPercent;
-                window.ApplyOpacity(settings.OpacityPercent);
+                window.ApplyThemeColors(settings.Theme);
+                window.UpdateButtons(settings.Toolbars[edge].Buttons);
+                window.ApplyTouchMode(settings.TouchMode);
                 window.SnapToEdge();
+                // Apply opacity last so theme/layout changes don't reset it
+                window.ApplyOpacity(settings.OpacityPercent);
             }
         }
     }
@@ -140,6 +144,10 @@ public class ToolbarManager : IToolbarManager
             Edge = edge,
             PositionPercent = settings.Toolbars[edge].PositionPercent,
         };
+        window.ApplyThemeColors(settings.Theme);
+        window.UpdateButtons(settings.Toolbars[edge].Buttons);
+        window.ApplyTouchMode(settings.TouchMode);
+        // Apply opacity last so theme/layout changes don't reset it
         window.ApplyOpacity(settings.OpacityPercent);
 
         window.PositionChanged += OnToolbarPositionChanged;

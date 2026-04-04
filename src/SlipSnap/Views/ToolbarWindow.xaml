@@ -9,19 +9,18 @@
         AllowsTransparency="True"
         Background="Transparent"
         ResizeMode="NoResize"
-        Width="48" Height="260"
         Loaded="Window_Loaded">
-    <Border x:Name="ToolbarBorder" Background="{DynamicResource ApplicationBackgroundBrush}" CornerRadius="8" Padding="4">
+    <Border x:Name="ToolbarBorder" CornerRadius="8" Padding="4">
         <StackPanel x:Name="ButtonPanel" VerticalAlignment="Center" Orientation="Vertical">
             <!-- Grip for dragging -->
-            <Border x:Name="GripArea" Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="4"
+            <Border x:Name="GripArea" CornerRadius="4"
                     Height="12" Margin="2" Cursor="SizeAll"
                     MouseLeftButtonDown="Grip_MouseLeftButtonDown"
                     MouseMove="Grip_MouseMove"
                     MouseLeftButtonUp="Grip_MouseLeftButtonUp"
                     AutomationProperties.Name="Grip">
-                <TextBlock Text="⋯" HorizontalAlignment="Center" VerticalAlignment="Center"
-                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" FontSize="8" />
+                <TextBlock x:Name="GripText" Text="⋯" HorizontalAlignment="Center" VerticalAlignment="Center"
+                           FontSize="8" />
             </Border>
 
             <!-- Start Menu -->
@@ -38,7 +37,7 @@
                     AutomationProperties.Name="Task View"
                     Style="{StaticResource OverlayButtonStyle}" />
 
-            <Separator Margin="2,4" Background="{DynamicResource ControlFillColorSecondaryBrush}" />
+            <Separator x:Name="ButtonSeparator" Margin="2,4" />
 
             <!-- Previous Desktop -->
             <Button x:Name="BtnPrevDesktop" Content="◀" ToolTip="Previous Desktop"

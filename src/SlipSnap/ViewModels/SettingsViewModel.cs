@@ -70,6 +70,18 @@ public class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool TouchMode
+    {
+        get => _settings.TouchMode;
+        set
+        {
+            if (_settings.TouchMode == value) return;
+            _settings.TouchMode = value;
+            OnPropertyChanged();
+            SaveSettings();
+        }
+    }
+
     public bool IsLeftEnabled
     {
         get => _settings.Toolbars[ToolbarEdge.Left].IsEnabled;

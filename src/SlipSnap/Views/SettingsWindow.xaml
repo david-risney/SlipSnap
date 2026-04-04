@@ -8,7 +8,8 @@
         SizeToContent="Height"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
-        ExtendsContentIntoTitleBar="True">
+        ExtendsContentIntoTitleBar="True"
+        WindowBackdropType="Mica">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -77,6 +78,8 @@
 
                 <!-- Behavior -->
                 <TextBlock Text="Behavior" FontWeight="SemiBold" FontSize="16" Margin="0,0,0,8" />
+                <CheckBox Content="Larger buttons for touch"
+                          IsChecked="{Binding TouchMode}" Margin="0,0,0,4" />
                 <CheckBox Content="Only show when a fullscreen window is present"
                           IsChecked="{Binding FullscreenOnly}" Margin="0,0,0,4" />
                 <CheckBox Content="Hide toolbars in RDP session"

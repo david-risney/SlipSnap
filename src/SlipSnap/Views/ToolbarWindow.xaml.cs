@@ -1,9 +1,11 @@
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Media;
 using SlipSnap.Interop;
 using SlipSnap.Models;
 using SlipSnap.ViewModels;
+using Color = System.Windows.Media.Color;
 using Point = System.Windows.Point;
 using MouseEventArgs = System.Windows.Input.MouseEventArgs;
 
@@ -21,6 +23,7 @@ public partial class ToolbarWindow : Window
     public ToolbarWindow()
     {
         InitializeComponent();
+        ApplyThemeColors(ThemeMode.Dark);
     }
 
     public ToolbarEdge Edge
@@ -44,6 +47,55 @@ public partial class ToolbarWindow : Window
     public void ApplyOpacity(int opacityPercent)
     {
         Opacity = Math.Clamp(opacityPercent, 10, 100) / 100.0;
+    }
+
+    private bool _touchMode;
+
+    public void ApplyTouchMode(bool touchMode)
+    {
+        _touchMode = touchMode;
+        double fontSize = touchMode ? 24 : 18;
+        var margin = touchMode ? new Thickness(4) : new Thickness(2);
+        var padding = touchMode ? new Thickness(8) : new Thickness(4);
+
+        foreach (var btn in new[] { BtnStartMenu, BtnTaskView, BtnPrevDesktop, BtnNextDesktop })
+        {
+            btn.FontSize = fontSize;
+            btn.Margin = margin;
+            btn.Padding = padding;
+        }
+    }
+
+    public void UpdateButtons(IList<ToolbarButtonType> buttons)
+    {
+        BtnStartMenu.Visibility = buttons.Contains(ToolbarButtonType.StartMenu)
+            ? Visibility.Visible : Visibility.Collapsed;
+        BtnTaskView.Visibility = buttons.Contains(ToolbarButtonType.TaskView)
+            ? Visibility.Visible : Visibility.Collapsed;
+        BtnPrevDesktop.Visibility = buttons.Contains(ToolbarButtonType.PrevDesktop)
+            ? Visibility.Visible : Visibility.Collapsed;
+        BtnNextDesktop.Visibility = buttons.Contains(ToolbarButtonType.NextDesktop)
+            ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    public void ApplyThemeColors(ThemeMode theme)
+    {
+        bool isDark = theme != ThemeMode.Light;
+        var bg = isDark ? Color.FromRgb(0x2B, 0x2B, 0x2B) : Color.FromRgb(0xF3, 0xF3, 0xF3);
+        var accent = isDark ? Color.FromRgb(0x44, 0x44, 0x44) : Color.FromRgb(0xD0, 0xD0, 0xD0);
+        var fg = isDark ? Colors.LightGray : Colors.DimGray;
+        var btnBg = isDark ? Color.FromArgb(0x55, 0xFF, 0xFF, 0xFF) : Color.FromArgb(0x55, 0x00, 0x00, 0x00);
+        var btnFg = isDark ? Colors.White : Color.FromRgb(0x1A, 0x1A, 0x1A);
+
+        ToolbarBorder.Background = new SolidColorBrush(bg);
+        GripArea.Background = new SolidColorBrush(accent);
+        GripText.Foreground = new SolidColorBrush(fg);
+        ButtonSeparator.Background = new SolidColorBrush(accent);
+
+        var btnStyle = new Style(typeof(System.Windows.Controls.Button), (Style)FindResource("OverlayButtonStyle"));
+        btnStyle.Setters.Add(new Setter(ForegroundProperty, new SolidColorBrush(btnFg)));
+        btnStyle.Setters.Add(new Setter(BackgroundProperty, new SolidColorBrush(btnBg)));
+        Resources["OverlayButtonStyle"] = btnStyle;
     }
 
     private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -70,30 +122,46 @@ public partial class ToolbarWindow : Window
     public void SnapToEdge()
     {
         var screen = SystemParameters.WorkArea;
+        bool isVertical = _edge is ToolbarEdge.Left or ToolbarEdge.Right;
+
+        // Count visible buttons
+        int visibleButtons = new[] { BtnStartMenu, BtnTaskView, BtnPrevDesktop, BtnNextDesktop }
+            .Count(b => b.Visibility == Visibility.Visible);
+
+        // Calculate size based on touch mode and button count
+        double btnSize = _touchMode ? 52 : 36;  // button + margin
+        double gripSize = 20;  // grip + margin
+        double separatorSize = 12;  // separator + margin
+        double padding = 16;  // border padding (4*2) + some breathing room
+        double contentLength = gripSize + (visibleButtons * btnSize) + separatorSize + padding;
+        double barThickness = _touchMode ? 64 : 48;
+
+        if (isVertical)
+        {
+            Width = barThickness;
+            Height = contentLength;
+        }
+        else
+        {
+            Width = contentLength;
+            Height = barThickness;
+        }
 
         switch (_edge)
         {
             case ToolbarEdge.Left:
-                Width = 48;
-                Height = 260;
                 Left = screen.Left;
                 Top = screen.Top + (screen.Height - Height) * _positionPercent;
                 break;
             case ToolbarEdge.Right:
-                Width = 48;
-                Height = 260;
                 Left = screen.Right - Width;
                 Top = screen.Top + (screen.Height - Height) * _positionPercent;
                 break;
             case ToolbarEdge.Top:
-                Width = 260;
-                Height = 48;
                 Left = screen.Left + (screen.Width - Width) * _positionPercent;
                 Top = screen.Top;
                 break;
             case ToolbarEdge.Bottom:
-                Width = 260;
-                Height = 48;
                 Left = screen.Left + (screen.Width - Width) * _positionPercent;
                 Top = screen.Bottom - Height;
                 break;
@@ -133,19 +201,19 @@ public partial class ToolbarWindow : Window
         if (isVertical)
         {
             double newTop = screenPoint.Y - _dragStart.Y;
-            newTop = Math.Clamp(newTop, screen.Top, screen.Bottom - Height);
+            newTop = Math.Clamp(newTop, screen.Top, screen.Bottom - ActualHeight);
             Top = newTop;
-            _positionPercent = (screen.Height - Height) > 0
-                ? (Top - screen.Top) / (screen.Height - Height)
+            _positionPercent = (screen.Height - ActualHeight) > 0
+                ? (Top - screen.Top) / (screen.Height - ActualHeight)
                 : 0.5;
         }
         else
         {
             double newLeft = screenPoint.X - _dragStart.X;
-            newLeft = Math.Clamp(newLeft, screen.Left, screen.Right - Width);
+            newLeft = Math.Clamp(newLeft, screen.Left, screen.Right - ActualWidth);
             Left = newLeft;
-            _positionPercent = (screen.Width - Width) > 0
-                ? (Left - screen.Left) / (screen.Width - Width)
+            _positionPercent = (screen.Width - ActualWidth) > 0
+                ? (Left - screen.Left) / (screen.Width - ActualWidth)
                 : 0.5;
         }
     }

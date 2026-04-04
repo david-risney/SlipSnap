@@ -16,6 +16,8 @@ public class AppSettings
 
     public bool HideInRdpSession { get; set; } = true;
 
+    public bool TouchMode { get; set; }
+
     public Dictionary<ToolbarEdge, ToolbarConfig> Toolbars { get; set; } = CreateDefaultToolbars();
 
     /// <summary>

@@ -1,21 +1,20 @@
+using System.Diagnostics;
 using FluentAssertions;
 using SlipSnap.E2ETests.Helpers;
 
 namespace SlipSnap.E2ETests;
 
-public class TrayIconTests : IDisposable
+[Collection("App")]
+public class TrayIconTests
 {
-    private readonly AppLauncher _launcher = new();
+    private readonly AppFixture _app;
 
-    public void Dispose() => _launcher.Dispose();
+    public TrayIconTests(AppFixture app) => _app = app;
 
-    [Fact(Skip = "Requires built and signed app — run manually")]
-    public void TrayIcon_ShouldAppearOnLaunch()
+    [Fact]
+    public void App_ShouldStayRunningWithTrayIcon()
     {
-        _launcher.Start();
-        Thread.Sleep(3000);
-
-        // Verify the process is running (tray icon presence is hard to verify via UIA)
-        _launcher.App.HasExited.Should().BeFalse("App should still be running with tray icon");
+        var proc = Process.GetProcessById(_app.ProcessId);
+        proc.HasExited.Should().BeFalse("App should still be running with tray icon");
     }
 }

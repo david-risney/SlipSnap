@@ -1,41 +1,63 @@
+using System.Text.Json;
 using FluentAssertions;
-using FlaUI.Core.AutomationElements;
-using FlaUI.Core.Definitions;
 using SlipSnap.E2ETests.Helpers;
 
 namespace SlipSnap.E2ETests;
 
-public class ToolbarButtonTests : IDisposable
+[Collection("App")]
+public class ToolbarButtonTests
 {
-    private readonly AppLauncher _launcher = new();
+    private readonly AppFixture _app;
 
-    public void Dispose() => _launcher.Dispose();
+    public ToolbarButtonTests(AppFixture app) => _app = app;
 
-    [Fact(Skip = "Requires built and signed app — run manually")]
-    public void StartMenu_Button_ShouldExist()
+    [Fact]
+    public void Toolbars_ShouldHaveExpectedButtons()
     {
-        _launcher.Start();
-        Thread.Sleep(2000);
+        using var result = ScriptRunner.Run("inspect-toolbar.ps1");
+        var toolbars = result.RootElement.GetProperty("toolbars");
 
-        var windows = _launcher.App.GetAllTopLevelWindows(_launcher.Automation);
-        var toolbar = windows.First();
+        var allButtons = toolbars.EnumerateArray()
+            .SelectMany(t => t.GetProperty("buttons").EnumerateArray())
+            .Select(b => b.GetProperty("name").GetString()!)
+            .ToList();
 
-        var startBtn = toolbar.FindFirstDescendant(cf =>
-            cf.ByAutomationId("BtnStartMenu").Or(cf.ByName("Start Menu")));
-        startBtn.Should().NotBeNull("Start Menu button should exist");
+        // Default config has Task View + Prev Desktop on left, Start Menu + Next Desktop on right
+        allButtons.Should().Contain("Task View");
+        allButtons.Should().Contain("Previous Desktop");
+        allButtons.Should().Contain("Start Menu");
+        allButtons.Should().Contain("Next Desktop");
     }
 
-    [Fact(Skip = "Requires built and signed app — run manually")]
-    public void TaskView_Button_ShouldExist()
+    [Fact]
+    public void AllButtons_ShouldBeEnabled()
     {
-        _launcher.Start();
-        Thread.Sleep(2000);
+        using var result = ScriptRunner.Run("inspect-toolbar.ps1");
+        var toolbars = result.RootElement.GetProperty("toolbars");
 
-        var windows = _launcher.App.GetAllTopLevelWindows(_launcher.Automation);
-        var toolbar = windows.First();
+        foreach (var toolbar in toolbars.EnumerateArray())
+        {
+            foreach (var button in toolbar.GetProperty("buttons").EnumerateArray())
+            {
+                button.GetProperty("isEnabled").GetBoolean().Should().BeTrue(
+                    $"button '{button.GetProperty("name").GetString()}' should be enabled");
+            }
+        }
+    }
 
-        var taskViewBtn = toolbar.FindFirstDescendant(cf =>
-            cf.ByAutomationId("BtnTaskView").Or(cf.ByName("Task View")));
-        taskViewBtn.Should().NotBeNull("Task View button should exist");
+    [Fact]
+    public void AllButtons_ShouldBeVisible()
+    {
+        using var result = ScriptRunner.Run("inspect-toolbar.ps1");
+        var toolbars = result.RootElement.GetProperty("toolbars");
+
+        foreach (var toolbar in toolbars.EnumerateArray())
+        {
+            foreach (var button in toolbar.GetProperty("buttons").EnumerateArray())
+            {
+                button.GetProperty("isOffscreen").GetBoolean().Should().BeFalse(
+                    $"button '{button.GetProperty("name").GetString()}' should be on-screen");
+            }
+        }
     }
 }
