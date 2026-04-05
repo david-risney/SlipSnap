@@ -71,31 +71,35 @@ public class FullscreenDetector : IFullscreenDetector, IDisposable
     private void CheckFullscreen()
     {
         bool found = false;
+        var fgHwnd = NativeMethods.GetForegroundWindow();
 
-        NativeMethods.EnumWindows((hWnd, _) =>
+        if (fgHwnd != IntPtr.Zero && fgHwnd != _selfHwnd)
         {
-            if (hWnd == _selfHwnd) return true; // Skip our own windows
-            if (!NativeMethods.IsWindowVisible(hWnd)) return true;
-
-            if (NativeMethods.GetWindowRect(hWnd, out var rect))
+            var shellHwnd = NativeMethods.GetShellWindow();
+            if (fgHwnd != shellHwnd && NativeMethods.IsWindowVisible(fgHwnd))
             {
-                var monitor = NativeMethods.MonitorFromWindow(hWnd, NativeMethods.MONITOR_DEFAULTTONEAREST);
-                var mi = new NativeMethods.MONITORINFO { cbSize = Marshal.SizeOf<NativeMethods.MONITORINFO>() };
+                // Skip known desktop-layer classes
+                var classNameBuf = new char[64];
+                int classLen = NativeMethods.GetClassName(fgHwnd, classNameBuf, classNameBuf.Length);
+                var className = classLen > 0 ? new string(classNameBuf, 0, classLen) : string.Empty;
+                bool isDesktopClass = className is "WorkerW" or "Progman"
+                    or "Shell_TrayWnd" or "Shell_SecondaryTrayWnd";
 
-                if (NativeMethods.GetMonitorInfo(monitor, ref mi))
+                if (!isDesktopClass && NativeMethods.GetWindowRect(fgHwnd, out var rect))
                 {
-                    if (rect.Left <= mi.rcMonitor.Left &&
-                        rect.Top <= mi.rcMonitor.Top &&
-                        rect.Right >= mi.rcMonitor.Right &&
-                        rect.Bottom >= mi.rcMonitor.Bottom)
+                    var monitor = NativeMethods.MonitorFromWindow(fgHwnd, NativeMethods.MONITOR_DEFAULTTONEAREST);
+                    var mi = new NativeMethods.MONITORINFO { cbSize = Marshal.SizeOf<NativeMethods.MONITORINFO>() };
+
+                    if (NativeMethods.GetMonitorInfo(monitor, ref mi))
                     {
-                        found = true;
-                        return false; // Stop enumerating
+                        found = rect.Left <= mi.rcMonitor.Left &&
+                                rect.Top <= mi.rcMonitor.Top &&
+                                rect.Right >= mi.rcMonitor.Right &&
+                                rect.Bottom >= mi.rcMonitor.Bottom;
                     }
                 }
             }
-            return true;
-        }, IntPtr.Zero);
+        }
 
         IsFullscreenWindowPresent = found;
 

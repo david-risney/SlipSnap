@@ -58,12 +58,19 @@ public partial class ToolbarWindow : Window
         var margin = touchMode ? new Thickness(4) : new Thickness(2);
         var padding = touchMode ? new Thickness(8) : new Thickness(4);
 
+        double size = touchMode ? 48 : 32;
         foreach (var btn in new[] { BtnStartMenu, BtnTaskView, BtnPrevDesktop, BtnNextDesktop })
         {
             btn.FontSize = fontSize;
             btn.Margin = margin;
             btn.Padding = padding;
+            btn.Width = size;
+            btn.Height = size;
         }
+
+        GripArea.Margin = margin;
+        GripText.FontSize = touchMode ? 14 : 10;
+        UpdateLayoutForEdge();
     }
 
     public void UpdateButtons(IList<ToolbarButtonType> buttons)
@@ -90,7 +97,6 @@ public partial class ToolbarWindow : Window
         ToolbarBorder.Background = new SolidColorBrush(bg);
         GripArea.Background = new SolidColorBrush(accent);
         GripText.Foreground = new SolidColorBrush(fg);
-        ButtonSeparator.Background = new SolidColorBrush(accent);
 
         var btnStyle = new Style(typeof(System.Windows.Controls.Button), (Style)FindResource("OverlayButtonStyle"));
         btnStyle.Setters.Add(new Setter(ForegroundProperty, new SolidColorBrush(btnFg)));
@@ -101,6 +107,11 @@ public partial class ToolbarWindow : Window
     private void Window_Loaded(object sender, RoutedEventArgs e)
     {
         _hwnd = new WindowInteropHelper(this).Handle;
+
+        // Hide from Alt+Tab / Task View
+        var exStyle = NativeMethods.GetWindowLongPtr(_hwnd, NativeMethods.GWL_EXSTYLE);
+        NativeMethods.SetWindowLongPtr(_hwnd, NativeMethods.GWL_EXSTYLE,
+            exStyle | NativeMethods.WS_EX_TOOLWINDOW);
 
         // Hook WndProc for non-activation
         var source = HwndSource.FromHwnd(_hwnd);
@@ -129,11 +140,10 @@ public partial class ToolbarWindow : Window
             .Count(b => b.Visibility == Visibility.Visible);
 
         // Calculate size based on touch mode and button count
-        double btnSize = _touchMode ? 52 : 36;  // button + margin
-        double gripSize = 20;  // grip + margin
-        double separatorSize = 12;  // separator + margin
+        double btnSize = _touchMode ? 56 : 36;  // button size + margin
+        double gripSize = _touchMode ? 32 : 20;  // grip + margin
         double padding = 16;  // border padding (4*2) + some breathing room
-        double contentLength = gripSize + (visibleButtons * btnSize) + separatorSize + padding;
+        double contentLength = gripSize + (visibleButtons * btnSize) + padding;
         double barThickness = _touchMode ? 64 : 48;
 
         if (isVertical)
@@ -176,6 +186,22 @@ public partial class ToolbarWindow : Window
         ButtonPanel.Orientation = isVertical
             ? System.Windows.Controls.Orientation.Vertical
             : System.Windows.Controls.Orientation.Horizontal;
+
+        // Grip: same width as buttons but half height (vertical), swapped for horizontal
+        double btnSize = _touchMode ? 48 : 32;
+        double gripHalf = Math.Round(btnSize / 2);
+        if (isVertical)
+        {
+            GripArea.Width = btnSize;
+            GripArea.Height = gripHalf;
+            GripText.Text = "\u22EF"; // horizontal dots
+        }
+        else
+        {
+            GripArea.Width = gripHalf;
+            GripArea.Height = btnSize;
+            GripText.Text = "\u22EE"; // vertical dots
+        }
     }
 
     // --- Grip drag ---
@@ -183,6 +209,7 @@ public partial class ToolbarWindow : Window
     private void Grip_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         _isDragging = true;
+        // Capture mouse position relative to the window (logical/WPF units)
         _dragStart = e.GetPosition(this);
         ((UIElement)sender).CaptureMouse();
     }
@@ -192,15 +219,18 @@ public partial class ToolbarWindow : Window
         if (!_isDragging) return;
 
         var screen = SystemParameters.WorkArea;
-        var position = e.GetPosition(null);
 
-        // Convert to screen coordinates
-        var screenPoint = PointToScreen(position);
+        // Current mouse position relative to the window (logical/WPF units)
+        var current = e.GetPosition(this);
+
+        // Compute delta in logical units (both points are relative to the window)
+        double deltaX = current.X - _dragStart.X;
+        double deltaY = current.Y - _dragStart.Y;
 
         bool isVertical = _edge is ToolbarEdge.Left or ToolbarEdge.Right;
         if (isVertical)
         {
-            double newTop = screenPoint.Y - _dragStart.Y;
+            double newTop = Top + deltaY;
             newTop = Math.Clamp(newTop, screen.Top, screen.Bottom - ActualHeight);
             Top = newTop;
             _positionPercent = (screen.Height - ActualHeight) > 0
@@ -209,7 +239,7 @@ public partial class ToolbarWindow : Window
         }
         else
         {
-            double newLeft = screenPoint.X - _dragStart.X;
+            double newLeft = Left + deltaX;
             newLeft = Math.Clamp(newLeft, screen.Left, screen.Right - ActualWidth);
             Left = newLeft;
             _positionPercent = (screen.Width - ActualWidth) > 0

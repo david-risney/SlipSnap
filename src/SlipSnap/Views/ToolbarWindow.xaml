@@ -14,41 +14,39 @@
         <StackPanel x:Name="ButtonPanel" VerticalAlignment="Center" Orientation="Vertical">
             <!-- Grip for dragging -->
             <Border x:Name="GripArea" CornerRadius="4"
-                    Height="12" Margin="2" Cursor="SizeAll"
+                    Width="32" Height="16" Margin="2" Cursor="SizeAll"
                     MouseLeftButtonDown="Grip_MouseLeftButtonDown"
                     MouseMove="Grip_MouseMove"
                     MouseLeftButtonUp="Grip_MouseLeftButtonUp"
                     AutomationProperties.Name="Grip">
                 <TextBlock x:Name="GripText" Text="⋯" HorizontalAlignment="Center" VerticalAlignment="Center"
-                           FontSize="8" />
+                           FontSize="10" />
             </Border>
 
             <!-- Start Menu -->
             <Button x:Name="BtnStartMenu" Content="⌂" ToolTip="Start Menu"
-                    FontSize="18" Margin="2" Padding="4"
+                    FontSize="18" Margin="2" Padding="4" Width="32" Height="32"
                     Command="{Binding StartMenuCommand}"
                     AutomationProperties.Name="Start Menu"
                     Style="{StaticResource OverlayButtonStyle}" />
 
             <!-- Task View -->
             <Button x:Name="BtnTaskView" Content="☰" ToolTip="Task View"
-                    FontSize="18" Margin="2" Padding="4"
+                    FontSize="18" Margin="2" Padding="4" Width="32" Height="32"
                     Command="{Binding TaskViewCommand}"
                     AutomationProperties.Name="Task View"
                     Style="{StaticResource OverlayButtonStyle}" />
 
-            <Separator x:Name="ButtonSeparator" Margin="2,4" />
-
             <!-- Previous Desktop -->
             <Button x:Name="BtnPrevDesktop" Content="◀" ToolTip="Previous Desktop"
-                    FontSize="18" Margin="2" Padding="4"
+                    FontSize="18" Margin="2" Padding="4" Width="32" Height="32"
                     Command="{Binding PrevDesktopCommand}"
                     AutomationProperties.Name="Previous Desktop"
                     Style="{StaticResource OverlayButtonStyle}" />
 
             <!-- Next Desktop -->
             <Button x:Name="BtnNextDesktop" Content="▶" ToolTip="Next Desktop"
-                    FontSize="18" Margin="2" Padding="4"
+                    FontSize="18" Margin="2" Padding="4" Width="32" Height="32"
                     Command="{Binding NextDesktopCommand}"
                     AutomationProperties.Name="Next Desktop"
                     Style="{StaticResource OverlayButtonStyle}" />
